@@ -1,0 +1,58 @@
+---
+deployment:
+  tasks:
+    - |
+      /bin/bash -euc '
+        set -o pipefail
+        source_dir=/home/qmascore/repositories/ClotheOnline-App
+        deploy_dir=/home/qmascore/mi-armario
+        cd "$source_dir"
+
+        # Explicit production allowlist: never copy config.php, data or tooling.
+        files=(
+          .htaccess
+          app/core.php
+          app/config.example.php
+          bin/install.php
+          bin/check.php
+          bin/maintenance.php
+          public/.htaccess
+          public/index.php
+          public/api.php
+          public/app.js
+          public/app.css
+          public/manifest.webmanifest
+          public/sw.js
+          public/icon.svg
+          public/icon-192.png
+          public/icon-512.png
+        )
+
+        # Validate the complete source before touching the destination.
+        for directory in app bin public; do
+          test -d "$directory"
+          test ! -L "$directory"
+        done
+        for file in "${files[@]}"; do
+          test -f "$file"
+          test ! -L "$file"
+        done
+        test -x /usr/bin/rsync
+
+        # Do not follow destination symlinks into unrelated directories/files.
+        for directory in "$deploy_dir" "$deploy_dir/app" "$deploy_dir/bin" "$deploy_dir/public"; do
+          test ! -L "$directory"
+          if test -e "$directory"; then test -d "$directory"; fi
+        done
+        for file in "${files[@]}"; do
+          test ! -L "$deploy_dir/$file"
+          if test -e "$deploy_dir/$file"; then test -f "$deploy_dir/$file"; fi
+        done
+
+        /bin/mkdir -p "$deploy_dir"
+        # No --delete: preserve production config, stored data and server files.
+        # Checksums detect updates even when size and timestamps are unchanged.
+        printf "%s\n" "${files[@]}" | /usr/bin/rsync \
+          --recursive --perms --times --checksum --delay-updates \
+          --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r --files-from=- ./ "$deploy_dir/"
+      '
