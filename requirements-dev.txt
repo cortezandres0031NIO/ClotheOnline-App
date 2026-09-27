@@ -1,0 +1,2 @@
+# Only needed for tests/photos.py. The PHP application has no Python dependency.
+Pillow==12.3.0

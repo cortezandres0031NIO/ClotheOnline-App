@@ -1,0 +1,50 @@
+# Private installation settings and all local user data
+/app/config.php
+/app/config.local.php
+/private-local/
+/armario-private/
+.env
+.env.*
+!.env.example
+owner.json
+login-attempts.json
+sess_*
+
+# Databases, backups, credentials and test artifacts
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+*.sql
+*.sql.gz
+*.zip
+*.tar
+*.tar.gz
+*.pem
+*.key
+*.p12
+*.pfx
+*.log
+/work/
+/tmp/
+/backups/
+/test-results/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Optional local PHP binary and its downloaded dependency notices
+/runtime/*
+!/runtime/ORIGEN.md
+
+# Operating system / editor files
+.DS_Store
+._*
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
