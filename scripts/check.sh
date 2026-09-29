@@ -27,6 +27,7 @@ done
 "$NODE_BIN" --check public/app.js
 "$NODE_BIN" --check public/sw.js
 "$NODE_BIN" tests/stats.mjs
+"$NODE_BIN" tests/dashboard.mjs
 
 test_work=$(mktemp -d "${TMPDIR:-/tmp}/mi-armario-tests.XXXXXX")
 printf '\nIsolated test files and reports: %s\n' "$test_work"

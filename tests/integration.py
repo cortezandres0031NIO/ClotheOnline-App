@@ -58,13 +58,30 @@ try:
  gid=save('garments',g);g['id']=gid
  g2={**g,'name':'Pantalón de prueba','category':'Pantalones','price_minor':180000,'currency':'NIO'};del g2['id'];gid2=save('garments',g2);g2['id']=gid2
  check('Prendas con compra en dos monedas',len(c.ok('state')['garments'])==2)
+ # Optional structured fields upgrade existing JSON records without a SQL migration.
+ g.update(size='Talla antigua',tags=['Personal']);save('garments',g)
+ g2.update(size='42',pants_type='Cargo',tags=[]);save('garments',g2)
+ legacy={k:v for k,v in g.items() if k not in ['size','tags']};save('garments',legacy)
+ stored=c.ok('state')['garments'][0]
+ check('Cliente antiguo conserva talla y etiquetas existentes',stored['size']=='Talla antigua' and stored['tags']==['Personal'])
+ check('Tipo de pantalón estructurado guardado',c.ok('state')['garments'][1]['pants_type']=='Cargo')
+ check('No se infiere tipo de pantalón',stored['pants_type']=='')
+ invalid={**g2,'pants_type':'Inventado'}
+ check('Tipo de pantalón no válido rechazado',c.request('save',{'kind':'garments','item':invalid,'revision':c.ok('state')['revision']})[0]==422)
+ check('Etiquetas malformadas rechazadas',c.request('save',{'kind':'garments','item':{**g,'tags':'Casual'},'revision':c.ok('state')['revision']})[0]==422)
+
  bad={**g,'price_minor':25.5};check('Precios exactos: se rechazan fracciones de unidad mínima',c.request('save',{'kind':'garments','item':bad,'revision':c.ok('state')['revision']})[0]==422)
  oid=save('outfits',{'name':'Oficina de prueba','notes':'','photo':None,'garment_ids':[gid,gid2]})
  check('Crear outfit no registra uso',len(c.ok('state')['wears'])==0)
+ check('Outfit anterior sin etiquetas permanece sin etiquetar',c.ok('state')['outfits'][0]['tags']==[])
+ save('outfits',{'id':oid,'name':'Oficina de prueba','notes':'','photo':None,'garment_ids':[gid,gid2],'tags':['Casual','Para la casa','Mi etiqueta','casual']})
+ check('Varias etiquetas, personalizadas y sin duplicados',c.ok('state')['outfits'][0]['tags']==['Casual','Para la casa','Mi etiqueta'])
+
  wid=save('wears',{'date':today,'notes':'Primer uso','outfit_id':oid,'garment_ids':[gid,gid2]})
  old=c.ok('state')['wears'][0]
  save('outfits',{'id':oid,'name':'Oficina modificada','notes':'','photo':None,'garment_ids':[gid2]})
  check('Editar outfit no modifica historial',c.ok('state')['wears'][0]==old)
+ check('Cliente antiguo conserva etiquetas del outfit',c.ok('state')['outfits'][0]['tags']==['Casual','Para la casa','Mi etiqueta'])
  save('wears',{'id':wid,'date':month+'-02','notes':'Corregido','outfit_id':oid,'garment_ids':[gid]})
  state=c.ok('state');check('Corregir uso cambia fecha y prendas sin cambiar outfit',state['wears'][0]['date']==month+'-02' and len(state['wears'][0]['items'])==1 and state['outfits'][0]['garment_ids']==[gid2])
  save('wears',{'date':today,'notes':'Segundo uso','outfit_id':oid,'garment_ids':[gid]})
@@ -84,6 +101,12 @@ try:
  badb=json.loads(files['data.json']);badb['data']['outfits'][0]['garment_ids']=['a'*32];bf={**files,'data.json':json.dumps(badb).encode()}
  check('Respaldo con referencias rotas rechazado',c.request('preview-import',files={'backup':('bad.zip',makezip(bf),'application/zip')})[0]==422)
  check('Importación inválida no cambia datos',c.ok('state')==before)
+ oldbackup=json.loads(files['data.json'])
+ for item in oldbackup['data']['garments']+oldbackup['data']['outfits']:
+  for key in ['size','pants_type','tags']:item.pop(key,None)
+ oldfiles={**files,'data.json':json.dumps(oldbackup).encode()}
+ check('Respaldo anterior sin campos nuevos compatible',c.request('preview-import',files={'backup':('old.zip',makezip(oldfiles),'application/zip')})[0]==200)
+
  # Restaurar primero vacío y luego completo: verifica una instalación sin registros.
  empty=makezip({'data.json':json.dumps({'format':'mi-armario','version':1,'data':{'garments':[],'outfits':[],'wears':[]}}).encode()})
  preview=c.ok('preview-import',files={'backup':('empty.zip',empty,'application/zip')})
