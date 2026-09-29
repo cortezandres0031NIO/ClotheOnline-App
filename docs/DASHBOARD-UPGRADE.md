@@ -11,10 +11,12 @@ Se mantienen `/home/qmascore/mi-armario`, `public/`, PHP 8.4, el inicio de sesi�
 
 ## Datos nuevos y compatibilidad
 
-- Prendas: `size` (cadena, vacía si falta), `pants_type` (opción o cadena vacía) y `tags` (lista vacía si falta).
+- Prendas: `size` (cadena, vacía si falta), `pants_type` (texto seleccionable o personalizado, vacío si falta), `pants_model` (modelo/referencia), `waist` (cintura) y `length` (largo) y `tags` (lista vacía si falta).
 - Outfits: `tags` (lista vacía si falta), con varias etiquetas reutilizables y etiquetas personalizadas.
 - Las sugerencias son opciones del formulario: nunca crean etiquetas ni asignaciones por sí solas.
 - Las tallas antiguas fuera del catálogo aparecen como una opción adicional y se conservan. El servidor admite estas tallas para preservar los respaldos.
+- Para Pantalones y Jeans, cintura y largo se introducen por separado y se muestran como `30x36` cuando ambos están guardados. No se extraen medidas de la talla antigua ni se convierten unidades. La talla antigua permanece guardada y se muestra en el formulario. Las demás categorías conservan el selector de talla.
+- Tipo, cintura y largo ofrecen sugerencias de prendas guardadas; admiten valores personalizados. No se guardan sugerencias por sí solas.
 - El tipo aparece para Pantalones y Jeans. Cambiar de categoría lo oculta sin borrar un tipo seleccionado previamente; solo se analiza en categorías de pantalones.
 - Las peticiones de clientes anteriores que omiten los nuevos campos conservan sus valores existentes. Se recomienda recargar ambos dispositivos tras desplegar.
 - Los respaldos completos incluyen estos campos y fotos. Los respaldos antiguos sin ellos siguen siendo válidos. Restaura los respaldos nuevos en esta versión o una posterior para conservar los campos nuevos.
@@ -27,7 +29,7 @@ Se mantienen `/home/qmascore/mi-armario`, `public/`, PHP 8.4, el inicio de sesi�
 - Costo por uso: por moneda, suma del precio de prendas con precio y al menos un uso dividida entre sus usos. Excluye prendas sin precio o sin usos. No es una conversión ni un promedio entre monedas.
 - Tallas y tipos: prendas activas; valores ausentes se muestran como «Sin especificar».
 - Uso por categoría: usos de cada prenda según su categoría guardada en el registro histórico.
-- Gasto por mes: únicamente compras con precio, moneda y fecha, hasta los últimos seis meses con compras por moneda. No inventa fechas para compras sin fecha.
+- Evolución del gasto: compras con precio, moneda y fecha. Últimos 30 días incluye hoy y los 29 días anteriores, agrupados por día. Los periodos de 3, 6 y 12 meses incluyen el mes actual hasta hoy y los meses anteriores necesarios, agrupados por mes. Todo el historial agrupa por mes. Cada moneda tiene su propia gráfica. Solo hay puntos donde existen compras fechadas; no se añaden puntos para fechas sin registros. Un precio cero guardado es válido. Sin compras elegibles, se muestra un estado vacío. La curva une observaciones sin sobrepasar sus valores y no estima compras en los intervalos. Los importes exactos están en una tabla desplegable.
 - Etiquetas: etiquetas asignadas actualmente a outfits; un outfit puede aparecer en varias. El insight de uso agrupa usos por las etiquetas actuales del outfit, no por etiquetas históricas.
 - Menos usadas y prendas sin uso reciente: activas. «Sin uso reciente» requiere último uso conocido de hace al menos 90 días. Las nunca usadas se cuentan por separado.
 - Últimos outfits llevados: registros reales con outfit de origen, ordenados por fecha de uso. No se inventan fechas de creación.

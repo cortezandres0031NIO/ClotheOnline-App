@@ -60,14 +60,21 @@ try:
  check('Prendas con compra en dos monedas',len(c.ok('state')['garments'])==2)
  # Optional structured fields upgrade existing JSON records without a SQL migration.
  g.update(size='Talla antigua',tags=['Personal']);save('garments',g)
- g2.update(size='42',pants_type='Cargo',tags=[]);save('garments',g2)
+ g2.update(size='42',pants_type='Cargo',pants_model='514',waist='30',length='36',tags=[]);save('garments',g2)
  legacy={k:v for k,v in g.items() if k not in ['size','tags']};save('garments',legacy)
  stored=c.ok('state')['garments'][0]
  check('Cliente antiguo conserva talla y etiquetas existentes',stored['size']=='Talla antigua' and stored['tags']==['Personal'])
  check('Tipo de pantalón estructurado guardado',c.ok('state')['garments'][1]['pants_type']=='Cargo')
  check('No se infiere tipo de pantalón',stored['pants_type']=='')
- invalid={**g2,'pants_type':'Inventado'}
- check('Tipo de pantalón no válido rechazado',c.request('save',{'kind':'garments','item':invalid,'revision':c.ok('state')['revision']})[0]==422)
+ custom={**g2,'pants_type':'Corte personal'};save('garments',custom);g2=custom
+ check('Tipo personalizado guardado',c.ok('state')['garments'][1]['pants_type']=='Corte personal')
+ legacy_pants={k:v for k,v in g2.items() if k not in ['waist','length','pants_model']};save('garments',legacy_pants)
+ stored_pants=c.ok('state')['garments'][1]
+ check('Modelo y medidas conservados con cliente anterior',all(stored_pants[k]==g2[k] for k in ['waist','length','pants_model']) and stored_pants['size']=='42')
+ invalid={**g2,'pants_type':['Cargo']}
+ check('Tipo malformado rechazado',c.request('save',{'kind':'garments','item':invalid,'revision':c.ok('state')['revision']})[0]==422)
+ check('Medida demasiado larga rechazada',c.request('save',{'kind':'garments','item':{**g2,'waist':'1'*31},'revision':c.ok('state')['revision']})[0]==422)
+
  check('Etiquetas malformadas rechazadas',c.request('save',{'kind':'garments','item':{**g,'tags':'Casual'},'revision':c.ok('state')['revision']})[0]==422)
 
  bad={**g,'price_minor':25.5};check('Precios exactos: se rechazan fracciones de unidad mínima',c.request('save',{'kind':'garments','item':bad,'revision':c.ok('state')['revision']})[0]==422)
@@ -103,7 +110,7 @@ try:
  check('Importación inválida no cambia datos',c.ok('state')==before)
  oldbackup=json.loads(files['data.json'])
  for item in oldbackup['data']['garments']+oldbackup['data']['outfits']:
-  for key in ['size','pants_type','tags']:item.pop(key,None)
+  for key in ['size','pants_type','pants_model','waist','length','tags']:item.pop(key,None)
  oldfiles={**files,'data.json':json.dumps(oldbackup).encode()}
  check('Respaldo anterior sin campos nuevos compatible',c.request('preview-import',files={'backup':('old.zip',makezip(oldfiles),'application/zip')})[0]==200)
 

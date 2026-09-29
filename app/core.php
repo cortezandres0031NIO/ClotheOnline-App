@@ -64,7 +64,6 @@ function money(array $v): ?int {
 }
 function categories(): array { return ['Camisetas','Camisas','Pantalones','Jeans','Vestidos','Faldas','Abrigos','Jerséis','Calzado','Deporte','Accesorios','Otros']; }
 function currencies(): array { return ['NIO'=>2,'USD'=>2,'EUR'=>2,'MXN'=>2,'CRC'=>2,'GTQ'=>2,'HNL'=>2,'COP'=>2,'GBP'=>2,'JPY'=>0]; }
-function pantsTypes(): array { return ['Jeans rectos','Skinny','Cargo','Chino','Jogger','Palazzo']; }
 function tagsField(array $v): array {
     $tags=$v['tags']??[];
     if (!is_array($tags)||!array_is_list($tags)||count($tags)>30) fail('Usa como máximo 30 etiquetas.');
@@ -87,8 +86,7 @@ function garment(array $v,?array $photos=null): array {
     if ($price!==null && !array_key_exists($currency,currencies())) fail('Elige la moneda del precio.');
     $photo=photoField($v['photo']??null,$photos); if (!$photo) fail('Añade una foto de la prenda.');
     $pants=strvalField($v,'pants_type',60);
-    if ($pants!==''&&!in_array($pants,pantsTypes(),true)) fail('Tipo de pantalón no válido.');
-    return ['id'=>$v['id']??uid(),'name'=>strvalField($v,'name',120,true),'category'=>$cat,'color'=>strvalField($v,'color',60,true),'notes'=>strvalField($v,'notes'), 'photo'=>$photo,'purchase_date'=>dateField($v['purchase_date']??null),'store'=>strvalField($v,'store',120),'price_minor'=>$price,'currency'=>$price===null?'':$currency,'archived'=>(bool)($v['archived']??false),'size'=>strvalField($v,'size',60),'pants_type'=>$pants,'tags'=>tagsField($v)];
+    return ['id'=>$v['id']??uid(),'name'=>strvalField($v,'name',120,true),'category'=>$cat,'color'=>strvalField($v,'color',60,true),'notes'=>strvalField($v,'notes'), 'photo'=>$photo,'purchase_date'=>dateField($v['purchase_date']??null),'store'=>strvalField($v,'store',120),'price_minor'=>$price,'currency'=>$price===null?'':$currency,'archived'=>(bool)($v['archived']??false),'size'=>strvalField($v,'size',60),'pants_type'=>$pants,'pants_model'=>strvalField($v,'pants_model',120),'waist'=>strvalField($v,'waist',30),'length'=>strvalField($v,'length',30),'tags'=>tagsField($v)];
 }
 function selection(mixed $ids,array $gs): array {
     if (!is_array($ids)||!array_is_list($ids)||count($ids)<1||count($ids)>100) fail('Selecciona entre 1 y 100 prendas.');

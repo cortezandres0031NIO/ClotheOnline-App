@@ -107,7 +107,7 @@ try {
             if (!validId($id) || (isset($item['id'])&&!isset($items[$id]))) fail('Registro no encontrado.',404);
             $item['id']=$id; $gs=indexById($s['garments']); $os=indexById($s['outfits']);
             // Older clients omit optional fields: preserve their stored values.
-            foreach ($kind==='garments'?['size','pants_type','tags']:($kind==='outfits'?['tags']:[]) as $field) {
+            foreach ($kind==='garments'?['size','pants_type','pants_model','waist','length','tags']:($kind==='outfits'?['tags']:[]) as $field) {
                 if (!array_key_exists($field,$item)&&isset($items[$id][$field])) $item[$field]=$items[$id][$field];
             }
             $clean=match($kind){'garments'=>garment($item),'outfits'=>outfit($item,$gs),'wears'=>wear($item,$gs,$os,$items[$id]??null)};
