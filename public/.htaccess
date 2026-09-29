@@ -13,3 +13,8 @@ Header always set Referrer-Policy "no-referrer"
 <FilesMatch "^\.">
 Require all denied
 </FilesMatch>
+
+# CloudLinux PHP 8.4 for this application's public directory only.
+<FilesMatch "\.(php|php8|phtml)$">
+SetHandler application/x-httpd-alt-php84___lsphp
+</FilesMatch>
