@@ -25,8 +25,8 @@ Se mantienen `/home/qmascore/mi-armario`, `public/`, PHP 8.4, el inicio de sesi�
 
 - Total de prendas: todas, con desglose de activas y archivadas.
 - Prendas usadas este mes: identificadores distintos en usos del mes actual, incluidas archivadas.
-- Gasto registrado: precios conocidos, separados por moneda; incluye prendas archivadas y compras sin fecha. Sin precios, muestra «Sin datos».
-- Costo por uso: por moneda, suma del precio de prendas con precio y al menos un uso dividida entre sus usos. Excluye prendas sin precio o sin usos. No es una conversión ni un promedio entre monedas.
+- Resumen de gasto: una sola gráfica sustituye a las tarjetas «Gasto registrado» y «Costo por uso». El selector de moneda utiliza las monedas de compras realmente guardadas; nunca las suma entre sí. Las compras sin fecha no se asignan a la gráfica.
+- El costo por uso de cada prenda sigue disponible en las listas y estadísticas; ya no tiene una tarjeta resumen separada.
 - Tallas y tipos: prendas activas; valores ausentes se muestran como «Sin especificar».
 - Uso por categoría: usos de cada prenda según su categoría guardada en el registro histórico.
 - Evolución del gasto: compras con precio, moneda y fecha. Últimos 30 días incluye hoy y los 29 días anteriores, agrupados por día. Los periodos de 3, 6 y 12 meses incluyen el mes actual hasta hoy y los meses anteriores necesarios, agrupados por mes. Todo el historial agrupa por mes. Cada moneda tiene su propia gráfica. Solo hay puntos donde existen compras fechadas; no se añaden puntos para fechas sin registros. Un precio cero guardado es válido. Sin compras elegibles, se muestra un estado vacío. La curva une observaciones sin sobrepasar sus valores y no estima compras en los intervalos. Los importes exactos están en una tabla desplegable.
@@ -41,3 +41,9 @@ Las estadísticas existentes conservan sus filtros por fechas y categoría. No h
 Ejecuta `sh scripts/check.sh` con PHP, Python y Node disponibles (Node solo se usa en pruebas, no en producción). Incluye pruebas HTTP de alta con foto, edición, historial, protección de sesión, conflictos, exportación/restauración y compatibilidad de campos; pruebas de cálculos del panel y estadísticas; y pruebas de optimización de fotos.
 
 La revisión local se realiza con SQLite usando la misma tabla JSON y consultas preparadas. La comprobación final de MySQL, PHP Selector, Safari/cámara/PWA en un iPhone real y HTTPS se realiza después del despliegue. No se implementa funcionamiento sin conexión.
+
+## Interacción con la gráfica de gasto
+
+El ratón, el foco de teclado o un toque en un punto muestran fecha/periodo e importe exacto en la franja bajo la gráfica. Los puntos no abren el detalle, para que sea posible consultarlos en móvil. Pulsa otra zona de la gráfica o «Ampliar gráfica y ver detalle» para abrir el modal. Enter o espacio también funcionan. El detalle incluye la gráfica ampliada y la tabla de importes abierta. Periodo y moneda se sincronizan con el resumen; Escape o Cerrar vuelven al dashboard.
+
+El relleno azul bajo la curva es decorativo, no añade puntos ni estimaciones. Con una sola observación se muestra solo ese punto. Sin compras elegibles se muestra el estado vacío. Este cambio es solo de interfaz: no tiene cambios PHP, de esquema o de datos y no requiere migraciones ni comandos nuevos.

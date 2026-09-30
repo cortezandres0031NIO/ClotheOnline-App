@@ -60,3 +60,16 @@ let svg=vm.runInContext(code+`;spendingChart({currency:'USD',points:[{date:'2026
 assert.equal((svg.match(/class="spending-point"/g)||[]).length,3);assert.ok(svg.includes('class="spending-line"'));assert.ok(svg.includes('2026-09-05'));
 svg=vm.runInContext(`spendingChart({currency:'USD',points:[{date:'2026-09-01',value:0}]})`,renderContext);assert.equal((svg.match(/class="spending-point"/g)||[]).length,1);assert.ok(!svg.includes('class="spending-line"'));assert.ok(!svg.includes('NaN'));
 console.log('Chart rendering passed: smooth paths, exact tables, single and zero-valued points.');
+svg=vm.runInContext(`spendingChart({currency:'USD',points:[{date:'2026-09-01',value:100},{date:'2026-09-03',value:200}]},true)`,renderContext);
+assert.ok(svg.includes('class="spending-area"'));assert.ok(svg.includes('<linearGradient id="spending-detail-USD-fill"'));
+assert.ok(svg.includes('data-tooltip="2026-09-03 · 2 USD"'));assert.ok(svg.includes('role="button" tabindex="0"'));
+assert.ok(svg.includes('<details open>'));assert.ok(!svg.includes('data-action="expand-spending"'));
+const compact=vm.runInContext(`spendingChart({currency:'USD',points:[{date:'2026-09-01',value:100},{date:'2026-09-03',value:200}]})`,renderContext);
+assert.ok(compact.includes('spending-summary-USD-fill'));assert.ok(compact.includes('data-action="expand-spending"'));assert.ok(!compact.includes('<details'));
+assert.ok(!source.includes("metric('Gasto registrado'"));assert.ok(!source.includes("metric('Costo por uso'"));
+console.log('Spending component checks passed: gradient, exact interactive values, accessible points, expanded table and no duplicate summary cards.');
+renderContext.data={garments:spendingFixture};renderContext.session.today='2026-09-29';renderContext.spendingCurrency='USD';
+let view=vm.runInContext('spendingView()',renderContext);assert.ok(view.includes('spending-summary-USD-fill'));assert.ok(!view.includes('spending-summary-NIO-fill'));assert.ok(view.includes('data-spending-currency'));
+renderContext.spendingCurrency='NIO';view=vm.runInContext('spendingView(true)',renderContext);assert.ok(view.includes('spending-detail-NIO-fill'));assert.ok(!view.includes('spending-detail-USD-fill'));
+renderContext.data={garments:[]};view=vm.runInContext('spendingView()',renderContext);assert.ok(view.includes('No hay compras'));assert.ok(!view.includes('<svg'));assert.ok(!view.includes('data-spending-currency'));
+console.log('Currency selection and empty summary/detail rendering passed.');
